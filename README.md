@@ -2,10 +2,10 @@
 Simulação de gerenciador de Memória com listas duplamente encadeadas.
 
 # Authors
-Erick José Heiler, Halena Kulmann Duarte e Eder Augusto Penharbel
+Erick José Heiler, Halena Kulmann Duarte e Éder Augusto Penharbel
 
 # Resumo
-https://drive.google.com/file/d/1-yJjAluwzTW1YM2W8PPyXu08W92iRIK1/view?usp=sharing
+https://drive.google.com/file/d/15KjEVuK2x94KvjGWo66UWdMM7pm934h2/view?usp=sharing
 
 # Relatório
-https://drive.google.com/file/d/1R-ACxJvPJrsLVV2snPxTX7YG8byqCUVH/view?usp=sharing
+https://drive.google.com/file/d/1paqyIjhJEOtY_K_it5d7bQzGu4cuM1uK/view?usp=sharing
