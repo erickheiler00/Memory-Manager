@@ -13,7 +13,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <stdint.h>
-
+#include <sys/types.h>
 
 
 /* -----VARIAVEIS GLOBAIS----- */
@@ -38,15 +38,65 @@ int main()
 
     /* Testes */
 
-    int loop = 10;
-    int NALOCACOES = 10;
+    int loop = 2; // numero de processos que serao criados
+    int NALOCACOES = 2;
     int NDESALOCACOES = NALOCACOES/2;
 
     void* allocatedAddresses[NALOCACOES];  // array para armazenar os endereços alocados
     void *bla;
 
     srand(time(NULL));
+    
+    pid_t pid; // Variável que armazena o ID do processo
 
+    // Loop para criar 10 processos
+    for (int processos = 0; processos < loop; processos++)
+    {
+        printf("\nProcesso %i\n", processos);
+        pid = fork(); // Cria um novo processo
+
+        if (pid < 0)
+        {
+            perror("Erro ao criar o processo");
+            exit(EXIT_FAILURE);
+        }
+        else if (!pid)
+        {
+            // Processo filho
+
+            // Simulação de operações de alocação/desalocação de memória no processo filho
+            int i;
+
+            for (i = 0; i < NALOCACOES; i++)
+            {
+                void* endereco = (void*)(uintptr_t)(rand() % 1073741824);
+                printf("%p: ", endereco);
+                int comprimento = rand() % 100000;
+                bla = kalloc(memBase + (uintptr_t)endereco, comprimento);
+                allocatedAddresses[i] = endereco;
+            }
+
+            for (i = 0; i < NDESALOCACOES; i++) {
+                int index = rand() % NALOCACOES; // escolhe um indice aleatório = endereco aleatório dos já alocados
+                if (allocatedAddresses[index] != NULL)
+                {
+                    kfree(allocatedAddresses[index]);  // libera o endereço
+                    allocatedAddresses[index] = NULL; // libera no array
+                }
+            }
+
+            exit(EXIT_SUCCESS); 
+        }
+        else
+        {
+            // Processo pai
+
+            // Esperando o processo filho terminar:
+            waitpid(pid, NULL, 0);
+        }
+    }
+
+    /*
     int l, i;
     for(l = 0; l < loop; l++)
     {
@@ -67,7 +117,7 @@ int main()
             }
         }
     }
-
+    */
 
     //void *bla1 = kalloc(memBase + 4096, 2048);
     /*void *bla2 = kalloc(memBase + 6146, 2048);
