@@ -38,9 +38,9 @@ int main()
 
     /* Testes */
 
-    int loop = 2; // numero de processos que serao criados
-    int NALOCACOES = 2;
-    int NDESALOCACOES = NALOCACOES/2;
+    int loop = 1; // numero de processos que serao criados
+    int NALOCACOES = 1;
+    int NDESALOCACOES = 1;
 
     void* allocatedAddresses[NALOCACOES];  // array para armazenar os endereços alocados
     void *bla;
@@ -49,7 +49,7 @@ int main()
     
     pid_t pid; // Variável que armazena o ID do processo
 
-    // Loop para criar 10 processos
+    // Loop para criar vários processos
     for (int processos = 0; processos < loop; processos++)
     {
         printf("\nProcesso %i\n", processos);
@@ -85,7 +85,9 @@ int main()
                 }
             }
 
-            exit(EXIT_SUCCESS); 
+            lpa_printfLpa(memInfo->lpa);
+
+            //exit(EXIT_SUCCESS); 
         }
         else
         {
@@ -143,7 +145,7 @@ int main()
     void *bla17 = kalloc(memBase + 40000, 2048);
     void *bla18 = kalloc(memBase + 8296, 2048);*/
 
-    lpa_printfLpa(memInfo->lpa);
+    //lpa_printfLpa(memInfo->lpa);
 
     finalizar();
 
