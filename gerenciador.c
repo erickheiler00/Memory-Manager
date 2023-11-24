@@ -196,6 +196,8 @@ void lpa_marcarUsado(void *ptr, size_t comprimento)
             printf("\nFUNÇÃO MARCARUSADO\n");
             printf("Impossivel marcar ocupado, no ja esta ocupado \n");
         }    
+    } else {
+        printf("\nNO NULO\n");
     }
     printf("------------");
 }
@@ -203,7 +205,8 @@ void lpa_marcarUsado(void *ptr, size_t comprimento)
 
 void lpa_devolverUsado(void *ptr)
 {
-    printf("\nFUNÇÃO DEVOLVERUSADO\n"); 
+    printf("\nFUNÇÃO DEVOLVERUSADO1\n"); 
+    printf("nodesAlocados = %ld", memInfo->nodesAlocados);
     Node * no = findParaDesalocar(ptr, memInfo->base);
 
     if(no != NULL)
@@ -245,7 +248,7 @@ void lpa_devolverUsado(void *ptr)
     }
     else
     {
-        printf("\nFUNÇÃO DEVOLVERUSADO\n");
+        printf("\nFUNÇÃO DEVOLVERUSADO2\n");
         printf("Impossivel devolver memória, nó não está sendo usado \n");
     } 
     printf("------------");
@@ -296,7 +299,15 @@ Node *findParaAlocar(void *endereco, Node *base)
 Node *findParaDesalocar(void *endereco, Node *base)
 {
     printf("\nFUNÇÃO FINDPARADESALOCAR\n");
+    printf("ENDERECO %p\n", endereco);
+    printf("ENDERECO BASE %p\n", base->endereco);
+
     // encontra o nó que tem esse endereço
+    if (base != NULL){
+        printf("BASE NAO É NULA\n");
+    } else {
+        printf("BASE É NULA\n");
+    }
     while (base != NULL) 
     {
         if (endereco == base->endereco) 
@@ -328,6 +339,7 @@ void lpa_memoriaLivre(ListaPreAlocada *lpa, size_t tamanho_, void *memBase)
     node->comprimento = tamanho_;
     node->endereco = memBase;
     node->prev = NULL;
+    printf("NO=Node %p\n", node->endereco);
     memInfo->base = node;
 }
 

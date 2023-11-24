@@ -27,7 +27,7 @@ typedef struct Node
     struct Node *prev; // ponteiro para a entrada anterior
 } Node;
 
-#define NPREALOCADO 256
+#define NPREALOCADO 10
 // #define NPREALOCADO 8
 #define NBITMAP NPREALOCADO / 8
 

@@ -73,11 +73,12 @@ int main()
                 printf("%p: ", endereco);
                 int comprimento = rand() % 100000;
                 bla = kalloc(memBase + (uintptr_t)endereco, comprimento);
-                allocatedAddresses[i] = endereco;
+                allocatedAddresses[i] = bla;
             }
 
             for (i = 0; i < NDESALOCACOES; i++) {
-                int index = rand() % NALOCACOES; // escolhe um indice aleatório = endereco aleatório dos já alocados
+                //int index = rand() % NALOCACOES; // escolhe um indice aleatório = endereco aleatório dos já alocados
+                int index = 0;
                 if (allocatedAddresses[index] != NULL)
                 {
                     kfree(allocatedAddresses[index]);  // libera o endereço
