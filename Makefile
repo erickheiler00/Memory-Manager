@@ -1,6 +1,6 @@
 # compilador e flags
 CC = gcc
-CFLAGS = -Wall -Wextra -g
+CFLAGS = -Wall -Wextra -g 
 
 # nome do executavel e arquivos fonte
 TARGET = gerenciador
@@ -15,3 +15,9 @@ $(TARGET): $(SRC)
 # regra para limpar os arquivos objeto e o executavel
 clean:
 	rm -f $(TARGET) *.o
+
+paralelo: $(SRC) 
+	$(CC) $(CFLAGS) -fopenmp $(SRC) -o $(TARGET)
+
+naoparalelo: $(SRC) 
+	$(CC) $(CFLAGS) $(SRC) -o $(TARGET)

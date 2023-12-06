@@ -5,6 +5,7 @@
 **/
 
 #include "gerenciador.h"
+#include <omp.h>
 
 
 /* ----------SIMULACAO---------- */
@@ -12,6 +13,9 @@
 /* alocando espaco para a simulacao das operacoes com memoria */
 void *memBase = NULL;
 MemInfo *memInfo = NULL;
+
+static int numeroLpa = 0;
+static int quantidadeLpa = 0;
 
 
 void * criaMemoria(long tamanho)
@@ -31,7 +35,7 @@ void devolveMemoria(int *memoria)
 
 void inicializar(long tamanho_)
 {
-    printf("\nFUNÇÃO INICIALIZAR\n");
+    //printf("\nFUNÇÃO INICIALIZAR\n");
     ListaPreAlocada *lpa = NULL;
     /* alocando espaco para a simulacao das operacoes com memoria */
     memBase = criaMemoria(tamanho_);
@@ -46,7 +50,7 @@ void inicializar(long tamanho_)
     lpa_memoriaLivre(lpa, tamanho_, memBase); // marca toda a memoria como livre
     lpa_printfLpaNode(lpa); 
     lpa_marcarUsado(memInfo, sizeof(MemInfo)); // marca o inicio que tem as infos da memoria como usado
-    printf("------------");
+    //printf("------------");
 }
 
 
@@ -58,9 +62,9 @@ void finalizar()
 
 void debug()
 {
-    printf("\nFUNÇÃO DEBUG\n");
-    printf("memBase: %p\n", memBase);
-    printf("------------");
+    //printf("\nFUNÇÃO DEBUG\n");
+    //printf("memBase: %p\n", memBase);
+    //printf("------------");
 }
 
 
@@ -193,20 +197,20 @@ void lpa_marcarUsado(void *ptr, size_t comprimento)
         }
         else
         {
-            printf("\nFUNÇÃO MARCARUSADO\n");
-            printf("Impossivel marcar ocupado, no ja esta ocupado \n");
+            //printf("\nFUNÇÃO MARCARUSADO\n");
+            //printf("Impossivel marcar ocupado, no ja esta ocupado \n");
         }    
     } else {
-        printf("\nNO NULO\n");
+        //printf("\nNO NULO\n");
     }
-    printf("------------");
+    //printf("------------");
 }
 
 
 void lpa_devolverUsado(void *ptr)
 {
-    printf("\nFUNÇÃO DEVOLVERUSADO1\n"); 
-    printf("nodesAlocados = %ld", memInfo->nodesAlocados);
+    //printf("\nFUNÇÃO DEVOLVERUSADO1\n"); 
+    //printf("nodesAlocados = %ld", memInfo->nodesAlocados);
     Node * no = findParaDesalocar(ptr, memInfo->base);
 
     if(no != NULL)
@@ -248,10 +252,10 @@ void lpa_devolverUsado(void *ptr)
     }
     else
     {
-        printf("\nFUNÇÃO DEVOLVERUSADO2\n");
-        printf("Impossivel devolver memória, nó não está sendo usado \n");
+        //printf("\nFUNÇÃO DEVOLVERUSADO2\n");
+        //printf("Impossivel devolver memória, nó não está sendo usado \n");
     } 
-    printf("------------");
+    //printf("------------");
 }
 
 
@@ -261,9 +265,9 @@ void lpa_devolverUsado(void *ptr)
 void *kalloc(void *endereco, size_t tamanho_)
 {
     lpa_marcarUsado(endereco, tamanho_);
-    printf("\nFUNÇÃO KALLOC\n");
-    printf("Memoria alocada!\n");
-    printf("------------");
+    //printf("\nFUNÇÃO KALLOC\n");
+    //printf("Memoria alocada!\n");
+    //printf("------------");
     return endereco;
 }
 
@@ -271,8 +275,8 @@ void *kalloc(void *endereco, size_t tamanho_)
 void kfree(void *ptr)
 {
     lpa_devolverUsado(ptr);
-    printf("Memoria liberada!\n");
-    printf("------------");
+    //printf("Memoria liberada!\n");
+    //printf("------------");
 }
 
 
@@ -280,7 +284,7 @@ void kfree(void *ptr)
 
 Node *findParaAlocar(void *endereco, Node *base)
 {
-    printf("\nFUNÇÃO FINDPARAALOCAR\n");
+    //printf("\nFUNÇÃO FINDPARAALOCAR\n");
     // verifica se o endereço é menor que o endereço do primeiro nó
     if (base != NULL && endereco < base->endereco) {
         return NULL;
@@ -288,36 +292,80 @@ Node *findParaAlocar(void *endereco, Node *base)
     
     // encontra o nó em que o endereço faz parte do intervalo
     while (base != NULL && !(base->endereco <= endereco && endereco < (base->endereco + base->comprimento))) {
-        printf("bla\n");
+        //printf("bla\n");
         base = base->next;
     }
-    printf("------------");
+    //printf("------------");
     return base;
 }
 
 
 Node *findParaDesalocar(void *endereco, Node *base)
 {
-    printf("\nFUNÇÃO FINDPARADESALOCAR\n");
-    printf("ENDERECO %p\n", endereco);
-    printf("ENDERECO BASE %p\n", base->endereco);
 
-    // encontra o nó que tem esse endereço
-    if (base != NULL){
-        printf("BASE NAO É NULA\n");
-    } else {
-        printf("BASE É NULA\n");
-    }
-    while (base != NULL) 
+    /*
+    Node *resultadoNode = NULL;
+
+    int numThreads = omp_get_max_threads();
+    //printf("Número máximo de threads: %d\n", numThreads);
+
+    // Encontra o nó que tem esse endereço, paralelizando o loop
+    #pragma omp parallel shared(resultadoNode) num_threads(numThreads)
     {
-        if (endereco == base->endereco) 
+        #pragma omp for
+        for (int i = 0; i < quantidadeLpa; i++)
         {
-            return base;
-        }    
-        base = base->next;
+            Node *resultadoLocal = NULL;
+            Node *atual = base;
+
+            // Percorre a lista dentro de cada thread
+            while (atual != NULL)
+            {
+                // Se encontrou o nó, armazena o resultado local
+                if (endereco == atual->endereco)
+                {
+                    resultadoLocal = atual;
+                    break;
+                }
+
+                atual = atual->next;
+            }
+
+            // Se encontrou um resultado local, atualiza o resultado global
+            if (resultadoLocal != NULL)
+            {
+                #pragma omp critical
+                {
+                    if (resultadoNode == NULL)
+                        resultadoNode = resultadoLocal;
+                }
+            }
+        }
     }
-    printf("------------");
-    return base;
+
+    return resultadoNode;
+
+    */
+    //int numThreads = omp_get_max_threads();
+    struct Node* resultado = NULL;
+
+    #pragma omp parallel shared(base, resultado)
+    {
+        while (base != NULL) {
+            #pragma omp flush(resultado)
+            if (base->endereco == endereco) {
+                #pragma omp critical
+                {
+                    resultado = base;
+                }
+                break; // Sair do loop se encontrar o resultado
+            }
+            #pragma omp flush(base)
+            base = base->next;
+        }
+    }
+
+    return resultado;
 }
 
 
@@ -339,7 +387,7 @@ void lpa_memoriaLivre(ListaPreAlocada *lpa, size_t tamanho_, void *memBase)
     node->comprimento = tamanho_;
     node->endereco = memBase;
     node->prev = NULL;
-    printf("NO=Node %p\n", node->endereco);
+    //printf("NO=Node %p\n", node->endereco);
     memInfo->base = node;
 }
 
@@ -351,21 +399,30 @@ Node *lpa_getNode(ListaPreAlocada *lpa)
     se tiver procurar no bitmap, reduzir o numero de livres,
     marcar ocupado no bitmap e retornar o ponteiro para o cara certo */
     
-    printf("\nFUNÇÃO GETNODE\n");
+    //printf("\nFUNÇÃO GETNODE\n");
     // verificar se há nós livres na lista
     while(1)
     {
         // caso não tenha nenhum nó livre na lista, criar um nó novo
         if(lpa->livres == 0 && lpa->next == NULL)
         {
-            ListaPreAlocada *newLpa = NULL;
-            void *t1 = memInfo->fim->prev->endereco + memInfo->fim->prev->comprimento;
-            newLpa = (ListaPreAlocada*)(t1);
+            //ListaPreAlocada *newLpa = NULL;
+            ListaPreAlocada *newLpa = (ListaPreAlocada *)malloc(sizeof(ListaPreAlocada));;
+            //void *t1 = memInfo->fim->prev->endereco + memInfo->fim->prev->comprimento;
+            //newLpa = (ListaPreAlocada*)(t1);
             if (newLpa != NULL)
             {
-                lpa->next = newLpa;
+                //lpa->next = newLpa;
                 lpa_init(newLpa);
                 lpa_marcarUsado(&(newLpa), sizeof(ListaPreAlocada));
+                lpa->next = newLpa;
+                quantidadeLpa++;
+            }
+            else
+            {
+                // Tratar erro na alocação de memória
+                // printf(stderr, "Erro ao alocar nova ListaPreAlocada\n");
+                return NULL;
             }
         }
         else
@@ -399,8 +456,8 @@ Node *lpa_getNode(ListaPreAlocada *lpa)
                 lpa->nodes[pos].pos = pos; // atribui a posição pos ao campo pos do nó alocado
                 lpa->nodes[pos].pai = lpa; // atribui o ponteiro para a lista pré-alocada lpa ao campo pai do nó alocado
                 
-                printf("pos %lu\n", pos); // imprimir a posição do nó alocado
-                printf("lpa->bitmap[posAtual] %lu\n", lpa->bitmap[posAtual]); // imprimir o estado atual do bitmap
+                //printf("pos %lu\n", pos); // imprimir a posição do nó alocado
+                //printf("lpa->bitmap[posAtual] %lu\n", lpa->bitmap[posAtual]); // imprimir o estado atual do bitmap
                 
                 return &(lpa->nodes[pos]); // retorna o endereço de memória do nó alocado
             }
@@ -410,14 +467,14 @@ Node *lpa_getNode(ListaPreAlocada *lpa)
             }
         }
     }
-    printf("------------");
+    //printf("------------");
     return NULL;
 }
 
 
 void lpa_devolverNode(Node *node)
 {
-    printf("\nFUNÇÃO DEVOLVERNODE\n");
+    //printf("\nFUNÇÃO DEVOLVERNODE\n");
     if (node == NULL)
         return;
 
@@ -437,7 +494,7 @@ void lpa_devolverNode(Node *node)
     // limpa os campos do nó devolvido
     node = NULL;
 
-    printf("------------");
+    //printf("------------");
 }
 
 
@@ -465,22 +522,27 @@ void list_printNode(Node *n)
 
 void lpa_printfLpa(ListaPreAlocada *lpa)
 {
-    printf("\nFUNÇÃO PRINTLPA\n");
+    //printf("\nFUNÇÃO PRINTLPA\n");
+    
     while(lpa != NULL)
     {
         lpa_printfLpaNode(lpa);
         lpa = lpa->next;
     }
-    printf("------------");
+    //printf("------------");
 }
+
 
 
 void lpa_printfLpaNode(ListaPreAlocada *lpa)
 {
     //printf("\nFUNÇÃO PRINTLPANODE\n");
-    printf("este lpa: %p\n", lpa);
-    printf("livres: %d\n", lpa->livres);
-    printf("bitmap: \n");
+    
+    //printf("este lpa: %p\n", lpa);
+    //printf("livres: %d\n", lpa->livres);
+    //printf("bitmap: \n");
+    printf("Numero do LPA: %d\n", numeroLpa);
+
     for(unsigned long i = 0; i < NBITMAP; i++)
     {
         printf("%ld %lx\n", i, lpa->bitmap[i]);
@@ -503,4 +565,5 @@ void lpa_printfLpaNode(ListaPreAlocada *lpa)
         printf("\n");
     }
     printf("next lpa: %p\n", lpa->next);
+    numeroLpa++;
 }

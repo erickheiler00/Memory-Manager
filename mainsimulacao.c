@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 
 
 /* -----VARIAVEIS GLOBAIS----- */
@@ -39,8 +40,8 @@ int main()
     /* Testes */
 
     int loop = 1; // numero de processos que serao criados
-    int NALOCACOES = 1;
-    int NDESALOCACOES = 1;
+    int NALOCACOES = 10;
+    int NDESALOCACOES = 5;
 
     void* allocatedAddresses[NALOCACOES];  // array para armazenar os endereços alocados
     void *bla;
@@ -52,7 +53,7 @@ int main()
     // Loop para criar vários processos
     for (int processos = 0; processos < loop; processos++)
     {
-        printf("\nProcesso %i\n", processos);
+        //printf("\nProcesso %i\n", processos);
         pid = fork(); // Cria um novo processo
 
         if (pid < 0)
@@ -70,21 +71,50 @@ int main()
             for (i = 0; i < NALOCACOES; i++)
             {
                 void* endereco = (void*)(uintptr_t)(rand() % 1073741824);
-                printf("%p: ", endereco);
+                //printf("%p: ", endereco);
                 int comprimento = rand() % 100000;
                 bla = kalloc(memBase + (uintptr_t)endereco, comprimento);
                 allocatedAddresses[i] = bla;
             }
 
             for (i = 0; i < NDESALOCACOES; i++) {
+
                 //int index = rand() % NALOCACOES; // escolhe um indice aleatório = endereco aleatório dos já alocados
-                int index = 0;
+                int index = i;
+                
+                //while(int index = rand() % i){
                 if (allocatedAddresses[index] != NULL)
                 {
                     kfree(allocatedAddresses[index]);  // libera o endereço
                     allocatedAddresses[index] = NULL; // libera no array
                 }
+                
+
+                /*
+
+                int index;
+
+                do {
+                    index = rand() % NALOCACOES; // escolhe um índice aleatório = endereço aleatório dos já alocados
+                } while (allocatedAddresses[index] == NULL);
+
+                kfree(allocatedAddresses[index]);  // libera o endereço
+                allocatedAddresses[index] = NULL; // libera no array
+                */
             }
+                //int index = rand() % NALOCACOES; // escolhe um indice aleatório = endereco aleatório dos já alocados
+                //int index = 0;
+                /*
+                while(int index = rand() % i){
+                if (allocatedAddresses[index] != NULL)
+                {
+                    kfree(allocatedAddresses[index]);  // libera o endereço
+                    allocatedAddresses[index] = NULL; // libera no array
+                }
+                
+        }}*/
+        
+        
 
             lpa_printfLpa(memInfo->lpa);
 
